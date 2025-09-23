@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+
+
 use App\Repository\ActorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActorRepository::class)]
 #[ApiResource]
+
+#[ORM\HasLifecycleCallbacks]
 class Actor
 {
     #[ORM\Id]
@@ -27,7 +31,7 @@ class Actor
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $dob = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $dod = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -42,7 +46,7 @@ class Actor
     #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
     private Collection $movies;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $createdAt = null;
 
     public function __construct()
@@ -91,12 +95,12 @@ class Actor
         return $this;
     }
 
-    public function getDod(): ?string
+    public function getDod(): ?\DateTime
     {
         return $this->dod;
     }
 
-    public function setDod(?string $dod): static
+    public function setDod(?\DateTime $dod): static
     {
         $this->dod = $dod;
 
@@ -151,15 +155,15 @@ class Actor
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): void
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = new \DateTime();
 
-        return $this;
     }
 }
