@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\MovieRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,6 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource]
+#[ApiFilter(BooleanFilter::class, properties: ['online'])]
+#[ApiFilter(SearchFilter::class, properties: ['name' => 'partial'])]
 #[ORM\HasLifecycleCallbacks]
 class Movie
 {
@@ -36,6 +41,9 @@ class Movie
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $online = false;
 
     /**
      * @var Collection<int, Category>
@@ -131,6 +139,18 @@ class Movie
     {
         $this->createdAt = new \DateTimeImmutable();
 
+    }
+
+    public function isOnline(): bool
+    {
+        return $this->online;
+    }
+
+    public function setOnline(bool $online): static
+    {
+        $this->online = $online;
+
+        return $this;
     }
 
     /**

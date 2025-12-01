@@ -70,6 +70,7 @@ class AppFixtures extends Fixture
                 $movie->addActor($ActorObject);
             }
             $movie->addCategory($category);
+            $movie->setOnline($fakerMovie->boolean(70));
             $manager->persist($movie);
         }
 
