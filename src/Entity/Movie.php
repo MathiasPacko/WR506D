@@ -11,11 +11,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    paginationItemsPerPage: 15
+)]
 #[ApiFilter(BooleanFilter::class, properties: ['online'])]
-#[ApiFilter(SearchFilter::class, properties: ['name' => 'partial'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'name' => 'partial'])]
 #[ORM\HasLifecycleCallbacks]
 class Movie
 {
@@ -25,12 +28,29 @@ class Movie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre du film est obligatoire")]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        minMessage: "Le titre doit contenir au moins {{ limit }} caractère",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "La durée doit être un nombre positif")]
+    #[Assert\Range(
+        min: 1,
+        max: 600,
+        notInRangeMessage: "La durée doit être entre {{ min }} et {{ max }} minutes"
+    )]
     private ?int $duration = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -44,6 +64,36 @@ class Movie
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $online = false;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: "Le nombre d'entrées doit être positif ou zéro")]
+    #[Assert\Range(
+        min: 0,
+        max: 1000000000,
+        notInRangeMessage: "Le nombre d'entrées doit être entre {{ min }} et {{ max }}"
+    )]
+    private ?int $nbEntries = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Url(message: "L'URL n'est pas valide")]
+    #[Assert\Length(
+        max: 500,
+        maxMessage: "L'URL ne peut pas dépasser {{ limit }} caractères"
+    )]
+    private ?string $url = null;
+
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    #[Assert\PositiveOrZero(message: "Le budget doit être positif ou zéro")]
+    #[Assert\Range(
+        min: 0,
+        max: 1000000000,
+        notInRangeMessage: "Le budget doit être entre {{ min }} et {{ max }}"
+    )]
+    private ?float $budget = null;
+
+    #[ORM\ManyToOne(inversedBy: 'movies')]
+    #[Assert\NotNull(message: "Le réalisateur est obligatoire", groups: ['create'])]
+    private ?Director $director = null;
 
     /**
      * @var Collection<int, Category>
@@ -203,6 +253,54 @@ class Movie
         if ($this->actors->removeElement($actor)) {
             $actor->removeMovie($this);
         }
+
+        return $this;
+    }
+
+    public function getNbEntries(): ?int
+    {
+        return $this->nbEntries;
+    }
+
+    public function setNbEntries(?int $nbEntries): static
+    {
+        $this->nbEntries = $nbEntries;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): static
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function getBudget(): ?float
+    {
+        return $this->budget;
+    }
+
+    public function setBudget(?float $budget): static
+    {
+        $this->budget = $budget;
+
+        return $this;
+    }
+
+    public function getDirector(): ?Director
+    {
+        return $this->director;
+    }
+
+    public function setDirector(?Director $director): static
+    {
+        $this->director = $director;
 
         return $this;
     }

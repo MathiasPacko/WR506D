@@ -3,18 +3,16 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\ActorRepository;
+use App\Repository\DirectorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: ActorRepository::class)]
+#[ORM\Entity(repositoryClass: DirectorRepository::class)]
 #[ApiResource]
-
-#[ORM\HasLifecycleCallbacks]
-class Actor
+class Director
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -31,7 +29,8 @@ class Actor
     )]
     private ?string $lastname = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     #[Assert\Length(
         min: 2,
         max: 255,
@@ -40,7 +39,8 @@ class Actor
     )]
     private ?string $firstname = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: "La date de naissance est obligatoire")]
     #[Assert\LessThan(
         'today',
         message: "La date de naissance doit être dans le passé"
@@ -54,31 +54,11 @@ class Actor
     )]
     private ?\DateTime $dod = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: "La biographie est obligatoire")]
-    #[Assert\Length(
-        min: 10,
-        max: 10000,
-        minMessage: "La biographie doit contenir au moins {{ limit }} caractères",
-        maxMessage: "La biographie ne peut pas dépasser {{ limit }} caractères"
-    )]
-    private ?string $bio = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Length(
-        max: 255,
-        maxMessage: "Le chemin de la photo ne peut pas dépasser {{ limit }} caractères"
-    )]
-    private ?string $photo = null;
-
     /**
      * @var Collection<int, Movie>
      */
-    #[ORM\ManyToMany(targetEntity: Movie::class, inversedBy: 'actors')]
+    #[ORM\OneToMany(targetEntity: Movie::class, mappedBy: 'director')]
     private Collection $movies;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $createdAt = null;
 
     public function __construct()
     {
@@ -107,7 +87,7 @@ class Actor
         return $this->firstname;
     }
 
-    public function setFirstname(?string $firstname): static
+    public function setFirstname(string $firstname): static
     {
         $this->firstname = $firstname;
 
@@ -119,7 +99,7 @@ class Actor
         return $this->dob;
     }
 
-    public function setDob(?\DateTime $dob): static
+    public function setDob(\DateTime $dob): static
     {
         $this->dob = $dob;
 
@@ -138,30 +118,6 @@ class Actor
         return $this;
     }
 
-    public function getBio(): ?string
-    {
-        return $this->bio;
-    }
-
-    public function setBio(string $bio): static
-    {
-        $this->bio = $bio;
-
-        return $this;
-    }
-
-    public function getPhoto(): ?string
-    {
-        return $this->photo;
-    }
-
-    public function setPhoto(?string $photo): static
-    {
-        $this->photo = $photo;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Movie>
      */
@@ -174,6 +130,7 @@ class Actor
     {
         if (!$this->movies->contains($movie)) {
             $this->movies->add($movie);
+            $movie->setDirector($this);
         }
 
         return $this;
@@ -181,20 +138,13 @@ class Actor
 
     public function removeMovie(Movie $movie): static
     {
-        $this->movies->removeElement($movie);
+        if ($this->movies->removeElement($movie)) {
+            // set the owning side to null (unless already changed)
+            if ($movie->getDirector() === $this) {
+                $movie->setDirector(null);
+            }
+        }
 
         return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAt(): void
-    {
-        $this->createdAt = new \DateTime();
-
     }
 }
