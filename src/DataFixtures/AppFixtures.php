@@ -3,18 +3,60 @@
 namespace App\DataFixtures;
 
 use App\Entity\Category;
+use App\Entity\Director;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use App\Entity\Actor;
 use App\Entity\Movie;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $passwordHasher;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
+        // Create test user
+        $user = new User();
+        $user->setEmail('test@test.com');
+        $hashedPassword = $this->passwordHasher->hashPassword($user, 'test');
+        $user->setPassword($hashedPassword);
+        $manager->persist($user);
+
         $faker = \Faker\Factory::create();
         $faker->addProvider(new \Xylis\FakerCinema\Provider\Person($faker));
 
+        // Create Directors
+        $directorsArray = [];
+        $directorNames = $faker->actors($gender = null, $count = 50, $duplicates = false);
+        foreach ($directorNames as $item) {
+            $director = new Director();
+            $fullname = $item;
+            $names = explode(" ", $fullname);
+
+            $director->setFirstName($names[0] ?? 'Unknown');
+            $director->setLastName($names[1] ?? 'Director');
+
+            $dob = $faker->dateTimeBetween('-90 years', '-30 years');
+            $director->setDob($dob);
+
+            if ($faker->boolean(20)) {
+                $director->setDod(
+                    $faker->dateTimeBetween($dob, 'now')
+                );
+            }
+            $directorsArray[] = $director;
+            $manager->persist($director);
+        }
+
+        // Create Actors
+        $actorsArray = [];
         $actors = $faker->actors($gender = null, $count = 190, $duplicates = false);
         foreach ($actors as $item) {
             $actor = new Actor();
@@ -71,6 +113,18 @@ class AppFixtures extends Fixture
             }
             $movie->addCategory($category);
             $movie->setOnline($fakerMovie->boolean(70));
+
+            // Add new fields
+            $movie->setNbEntries($fakerMovie->optional(0.8)->numberBetween(100000, 50000000));
+            $movie->setBudget($fakerMovie->optional(0.9)->randomFloat(2, 100000, 300000000));
+            $movie->setUrl($fakerMovie->optional(0.7)->url());
+
+            // Assign a random director (80% chance)
+            if (!empty($directorsArray) && $fakerMovie->boolean(80)) {
+                $randomDirector = $directorsArray[array_rand($directorsArray)];
+                $movie->setDirector($randomDirector);
+            }
+
             $manager->persist($movie);
         }
 
