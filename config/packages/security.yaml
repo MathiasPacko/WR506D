@@ -48,7 +48,9 @@ security:
     access_control:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/graphql/graphiql, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/api/me, roles: IS_AUTHENTICATED_FULLY }
+        # La sécurité pour les autres endpoints /api est gérée au niveau des entités
         - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
