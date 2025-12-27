@@ -6,6 +6,11 @@ use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\MovieRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,7 +20,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ApiResource(
-    paginationItemsPerPage: 15
+    paginationItemsPerPage: 15,
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(security: "is_granted('ROLE_ADMIN')"),
+    ]
 )]
 #[ApiFilter(BooleanFilter::class, properties: ['online'])]
 #[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'name' => 'partial'])]
@@ -107,10 +119,17 @@ class Movie
     #[ORM\ManyToMany(targetEntity: Actor::class, mappedBy: 'movies')]
     private Collection $actors;
 
+    /**
+     * @var Collection<int, MediaObject>
+     */
+    #[ORM\OneToMany(targetEntity: MediaObject::class, mappedBy: 'movie', cascade: ['persist', 'remove'])]
+    private Collection $mediaObjects;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->actors = new ArrayCollection();
+        $this->mediaObjects = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -301,6 +320,35 @@ class Movie
     public function setDirector(?Director $director): static
     {
         $this->director = $director;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MediaObject>
+     */
+    public function getMediaObjects(): Collection
+    {
+        return $this->mediaObjects;
+    }
+
+    public function addMediaObject(MediaObject $mediaObject): static
+    {
+        if (!$this->mediaObjects->contains($mediaObject)) {
+            $this->mediaObjects->add($mediaObject);
+            $mediaObject->setMovie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMediaObject(MediaObject $mediaObject): static
+    {
+        if ($this->mediaObjects->removeElement($mediaObject)) {
+            if ($mediaObject->getMovie() === $this) {
+                $mediaObject->setMovie(null);
+            }
+        }
 
         return $this;
     }
