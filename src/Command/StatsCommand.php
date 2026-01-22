@@ -145,36 +145,36 @@ class StatsCommand extends Command
         }
 
         // Format texte par défaut
-        $content = "📊 Statistiques de l'application Rellflix\n";
-        $content .= "==========================================\n";
+        $content = "Statistiques de l'application\n";
+        $content .= "==============================\n";
         $content .= "Date : " . date('Y-m-d H:i:s') . "\n\n";
 
-        $io->title('📊 Statistiques de l\'application Rellflix');
+        $io->title('Statistiques de l\'application');
 
         if (isset($stats['movies'])) {
-            $io->section('🎬 Films');
+            $io->section('Films');
             $io->text("Nombre total de films : <info>{$stats['movies']}</info>");
-            $content .= "🎬 Films\n";
+            $content .= "Films\n";
             $content .= "Nombre total de films : {$stats['movies']}\n\n";
         }
 
         if (isset($stats['actors'])) {
-            $io->section('👤 Acteurs');
+            $io->section('Acteurs');
             $io->text("Nombre total d'acteurs : <info>{$stats['actors']}</info>");
-            $content .= "👤 Acteurs\n";
+            $content .= "Acteurs\n";
             $content .= "Nombre total d'acteurs : {$stats['actors']}\n\n";
         }
 
         if (isset($stats['categories'])) {
-            $io->section('📁 Catégories');
+            $io->section('Categories');
             $io->text("Nombre total de catégories : <info>{$stats['categories']['total']}</info>");
-            $content .= "📁 Catégories\n";
+            $content .= "Categories\n";
             $content .= "Nombre total de catégories : {$stats['categories']['total']}\n";
 
             if (!empty($stats['categories']['details'])) {
                 $io->newLine();
                 $io->text('Détail par catégorie :');
-                $content .= "Détail par catégorie :\n";
+                $content .= "Detail par categorie :\n";
 
                 foreach ($stats['categories']['details'] as $cat) {
                     $io->text("  - {$cat['name']} : <comment>{$cat['movies_count']} film(s)</comment>");
@@ -185,12 +185,12 @@ class StatsCommand extends Command
         }
 
         if (isset($stats['images'])) {
-            $io->section('🖼️  Images');
+            $io->section('Images');
             $io->text("Nombre total d'images : <info>{$stats['images']['total']}</info>");
             $io->text("Espace disque occupé : <info>{$stats['images']['disk_space_mb']} Mo</info>");
-            $content .= "🖼️  Images\n";
+            $content .= "Images\n";
             $content .= "Nombre total d'images : {$stats['images']['total']}\n";
-            $content .= "Espace disque occupé : {$stats['images']['disk_space_mb']} Mo\n\n";
+            $content .= "Espace disque occupe : {$stats['images']['disk_space_mb']} Mo\n\n";
         }
 
         return $content;
@@ -210,9 +210,9 @@ class StatsCommand extends Command
     {
         try {
             $email = (new Email())
-                ->from('noreply@rellflix.com')
+                ->from('stats@localhost')
                 ->to($recipient)
-                ->subject("Statistiques Rellflix - {$type} - " . date('Y-m-d H:i:s'))
+                ->subject("Statistiques - {$type} - " . date('Y-m-d H:i:s'))
                 ->text($content);
 
             $this->mailer->send($email);
