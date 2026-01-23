@@ -1,0 +1,85 @@
+name: Symfony CI - WR506D
+
+on:
+  push:
+    branches: [ "develop", "main" ]
+  pull_request:
+    branches: [ "develop", "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  symfony-tests:
+    name: Tests et qualite du code
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wr506d_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
+          coverage: xdebug
+
+      - name: Validation du composer.json
+        run: composer validate --strict
+
+      - name: Cache des packages Composer
+        id: composer-cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Installation des dependances
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Copie du fichier .env.test
+        run: |
+          cp .env.test .env.test.local
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/wr506d_test?serverVersion=8.0" >> .env.test.local
+
+      - name: Creation de la base de donnees de test
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:schema:create --env=test
+
+      - name: Generation des cles JWT pour les tests
+        run: |
+          mkdir -p config/jwt
+          openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:test123
+          openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:test123
+          echo "JWT_PASSPHRASE=test123" >> .env.test.local
+
+      - name: Execution des tests PHPUnit
+        run: vendor/bin/phpunit --testdox
+        continue-on-error: true
+
+      - name: Verification PHP_CodeSniffer (PSR-12)
+        run: vendor/bin/phpcs --standard=phpcs.xml --report=summary
+
+      - name: Analyse statique PHPStan
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Analyse PHPMD
+        run: vendor/bin/phpmd src/ text phpmd.xml

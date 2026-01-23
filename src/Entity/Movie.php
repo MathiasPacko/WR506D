@@ -208,7 +208,6 @@ class Movie
     public function setCreatedAt(): void
     {
         $this->createdAt = new \DateTimeImmutable();
-
     }
 
     public function isOnline(): bool
