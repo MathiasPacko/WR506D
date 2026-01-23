@@ -37,10 +37,10 @@ class StatsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('type', InputArgument::REQUIRED, 'Type de statistiques (all, movies, actors, categories, images)')
+            ->addArgument('type', InputArgument::REQUIRED, 'Type de stats (all, movies, actors, categories, images)')
             ->addArgument('format', InputArgument::OPTIONAL, 'Format de sortie (text, json)', 'text')
-            ->addOption('log-file', 'l', InputOption::VALUE_REQUIRED, 'Chemin du fichier de log où écrire les résultats')
-            ->addOption('email', 'm', InputOption::VALUE_REQUIRED, 'Adresse email pour envoyer les statistiques');
+            ->addOption('log-file', 'l', InputOption::VALUE_REQUIRED, 'Fichier de log')
+            ->addOption('email', 'm', InputOption::VALUE_REQUIRED, 'Email pour envoyer les stats');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
