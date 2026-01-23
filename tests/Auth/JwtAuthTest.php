@@ -8,10 +8,10 @@ class JwtAuthTest extends WebTestCase
 {
     public function testLoginSuccess(): void
     {
-        $response = static::createClient()->request('POST', '/auth', [
+        $response = static::createClient()->request('POST', '/api/login_check', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
-                'email' => 'test@test.com',
+                'username' => 'test@test.com',
                 'password' => 'test'
             ]
         ]);
@@ -25,10 +25,10 @@ class JwtAuthTest extends WebTestCase
 
     public function testLoginFailure(): void
     {
-        $response = static::createClient()->request('POST', '/auth', [
+        $response = static::createClient()->request('POST', '/api/login_check', [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => [
-                'email' => 'test@test.com',
+                'username' => 'test@test.com',
                 'password' => 'wrongpassword'
             ]
         ]);
