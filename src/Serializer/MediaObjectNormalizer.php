@@ -18,12 +18,14 @@ final class MediaObjectNormalizer implements NormalizerInterface
     ) {
     }
 
+    /**
+     * @return array|string|int|float|bool|\ArrayObject|null
+     */
     public function normalize(
         $object,
         ?string $format = null,
         array $context = []
-    ): array|string|int|float|bool|\ArrayObject|null
-    {
+    ) {
         $context[self::ALREADY_CALLED] = true;
 
         $object->contentUrl = $this->storage->resolveUri($object, 'file');
