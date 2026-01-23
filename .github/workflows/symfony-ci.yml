@@ -47,6 +47,8 @@ jobs:
           echo "APP_ENV=test" > .env
           echo "APP_SECRET=testsecret123" >> .env
           echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/wr506d_test?serverVersion=8.0" >> .env
+          echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
+          echo "CORS_ALLOW_ORIGIN='^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$'" >> .env
 
       - name: Cache des packages Composer
         id: composer-cache
