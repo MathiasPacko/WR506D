@@ -2,9 +2,9 @@
 
 namespace App\Tests\Auth;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 
-class JwtAuthTest extends WebTestCase
+class JwtAuthTest extends ApiTestCase
 {
     public function testLoginSuccess(): void
     {
