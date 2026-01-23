@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demo{% endblock %}
+
+{% block body %}
+    <h1>
+        {{ date|format_datetime(locale='fr', pattern='EEEE d MMMM y') }}
+    </h1>
+{% endblock %}

@@ -1,0 +1,37 @@
+name: Snyk Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  snyk-scan:
+    name: Analyse des vulnerabilites Snyk
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Creer le fichier .env
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_SECRET=testsecret123" >> .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-scripts --prefer-dist
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/php@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=composer.lock
