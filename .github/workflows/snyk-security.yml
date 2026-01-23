@@ -20,8 +20,13 @@ jobs:
         with:
           php-version: '8.3'
 
+      - name: Creer le fichier .env
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_SECRET=testsecret123" >> .env
+
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --no-scripts --prefer-dist
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/php@master

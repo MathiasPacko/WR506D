@@ -42,6 +42,12 @@ jobs:
       - name: Validation du composer.json
         run: composer validate
 
+      - name: Creer le fichier .env
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_SECRET=testsecret123" >> .env
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/wr506d_test?serverVersion=8.0" >> .env
+
       - name: Cache des packages Composer
         id: composer-cache
         uses: actions/cache@v4
