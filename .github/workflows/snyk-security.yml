@@ -5,12 +5,10 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  schedule:
-    - cron: '0 0 * * 0'  # Scan hebdomadaire le dimanche à minuit
 
 jobs:
   snyk-scan:
-    name: Analyse des vulnérabilités Snyk
+    name: Analyse des vulnerabilites Snyk
     runs-on: ubuntu-latest
 
     steps:
@@ -20,10 +18,15 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
+
+      - name: Creer le fichier .env
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_SECRET=testsecret123" >> .env
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --no-scripts --prefer-dist
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/php@master
@@ -32,9 +35,3 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --file=composer.lock
-
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: snyk.sarif

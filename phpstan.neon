@@ -1,0 +1,14 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    excludePaths:
+        - src/Kernel.php
+        - src/DataFixtures
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Doctrine entity IDs are managed by Doctrine, not assigned in code
+        - '#Property .+::\$id \(int\|null\) is never assigned int#'
+        # UserInterface doesn't have getId/getEmail but our User entity does
+        - '#Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface::(getId|getEmail)\(\)#'

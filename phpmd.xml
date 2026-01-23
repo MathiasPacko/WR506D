@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="WR506D PHPMD Rules"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd">
+
+    <description>PHPMD rules for WR506D Symfony project</description>
+
+    <!-- Exclude DataFixtures from analysis -->
+    <exclude-pattern>*/DataFixtures/*</exclude-pattern>
+
+    <!-- Clean Code Rules -->
+    <rule ref="rulesets/cleancode.xml/BooleanArgumentFlag"/>
+
+    <!-- Code Size Rules - with custom thresholds -->
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+        <properties>
+            <property name="reportLevel" value="20"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/codesize.xml/NPathComplexity">
+        <properties>
+            <property name="minimum" value="400"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/codesize.xml/ExcessiveClassComplexity"/>
+    <rule ref="rulesets/codesize.xml/TooManyFields"/>
+    <rule ref="rulesets/codesize.xml/TooManyMethods"/>
+    <rule ref="rulesets/codesize.xml/TooManyPublicMethods"/>
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength"/>
+
+    <!-- Design Rules -->
+    <rule ref="rulesets/design.xml/DepthOfInheritance"/>
+    <rule ref="rulesets/design.xml/NumberOfChildren"/>
+
+    <!-- Naming Rules - allow short names for common variables -->
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="exceptions" value="id,io,em,e,i,j,k,db"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/naming.xml/ConstantNamingConventions"/>
+    <rule ref="rulesets/naming.xml/BooleanGetMethodName"/>
+
+    <!-- Unused Code Rules -->
+    <rule ref="rulesets/unusedcode.xml/UnusedPrivateField"/>
+    <rule ref="rulesets/unusedcode.xml/UnusedPrivateMethod"/>
+    <rule ref="rulesets/unusedcode.xml/UnusedLocalVariable"/>
+</ruleset>

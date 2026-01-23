@@ -18,13 +18,16 @@ final class MediaObjectNormalizer implements NormalizerInterface
     ) {
     }
 
-    public function normalize($object, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
-    {
+    public function normalize(
+        mixed $data,
+        ?string $format = null,
+        array $context = []
+    ): \ArrayObject|array|string|int|float|bool|null {
         $context[self::ALREADY_CALLED] = true;
 
-        $object->contentUrl = $this->storage->resolveUri($object, 'file');
+        $data->contentUrl = $this->storage->resolveUri($data, 'file');
 
-        return $this->normalizer->normalize($object, $format, $context);
+        return $this->normalizer->normalize($data, $format, $context);
     }
 
     public function supportsNormalization($data, ?string $format = null, array $context = []): bool
