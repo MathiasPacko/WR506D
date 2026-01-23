@@ -1,4 +1,6 @@
 {
+    "name": "mathiaspacko/wr506d",
+    "description": "API REST Symfony pour la gestion de films et acteurs",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
