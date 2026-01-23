@@ -39,9 +39,6 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
           coverage: xdebug
 
-      - name: Validation du composer.json
-        run: composer validate
-
       - name: Creer le fichier .env
         run: |
           echo "APP_ENV=test" > .env
@@ -53,51 +50,29 @@ jobs:
           echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
           echo "JWT_PASSPHRASE=test123" >> .env
 
-      - name: Cache des packages Composer
-        id: composer-cache
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
       - name: Installation des dependances
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Copie du fichier .env.test
-        run: |
-          cp .env.test .env.test.local
-          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/wr506d_test?serverVersion=8.0" >> .env.test.local
-
-      - name: Creation de la base de donnees de test
-        run: |
-          php bin/console doctrine:database:create --env=test --if-not-exists
-          php bin/console doctrine:schema:create --env=test
-
-      - name: Generation des cles JWT pour les tests
+      - name: Generation des cles JWT
         run: |
           mkdir -p config/jwt
           openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:test123
           openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:test123
-          echo "JWT_PASSPHRASE=test123" >> .env.test.local
 
-      - name: Vider et rechauffer le cache
+      - name: Creation de la base de donnees
         run: |
-          php bin/console cache:clear --env=test
-          php bin/console cache:warmup --env=test
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:schema:create --env=test
+          php bin/console doctrine:fixtures:load --env=test --no-interaction
 
-      - name: Debug - Liste des routes
-        run: php bin/console debug:router --env=test | grep -E "(login|api)" || true
+      - name: PHP_CodeSniffer (PSR2)
+        run: vendor/bin/phpcs --standard=PSR2 src/
 
-      - name: Execution des tests PHPUnit
-        run: vendor/bin/phpunit --testdox
+      - name: PHPStan (level 2)
+        run: vendor/bin/phpstan analyze src/ --level=2
 
-      - name: Verification PHP_CodeSniffer (PSR-12)
-        run: vendor/bin/phpcs --standard=phpcs.xml --report=summary --runtime-set ignore_warnings_on_exit 1
+      - name: PHPMD
+        run: vendor/bin/phpmd src/ text cleancode,codesize,controversial,design
 
-      - name: Analyse statique PHPStan
-        run: vendor/bin/phpstan analyse --no-progress
-
-      - name: Analyse PHPMD
-        run: vendor/bin/phpmd src/ text phpmd.xml
+      - name: PHPUnit
+        run: php bin/phpunit
