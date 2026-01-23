@@ -1,0 +1,13 @@
+# Snyk (https://snyk.io) policy file
+version: v1.14.1
+# Configuration Snyk pour le projet Backend Symfony WR506D
+
+# Ignorer certaines vulnérabilités si nécessaire
+# ignore:
+#   'SNYK-PHP-PACKAGENAME-123456':
+#     - '*':
+#         reason: 'Raison de l\'ignore'
+#         expires: '2026-12-31T00:00:00.000Z'
+
+# Patches appliqués automatiquement
+patch: {}
