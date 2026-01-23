@@ -39,7 +39,7 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql
           coverage: xdebug
 
-      - name: Creer le fichier .env
+      - name: Creer les fichiers .env
         run: |
           echo "APP_ENV=test" > .env
           echo "APP_SECRET=testsecret123" >> .env
@@ -49,6 +49,7 @@ jobs:
           echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
           echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
           echo "JWT_PASSPHRASE=test123" >> .env
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/wr506d_test?serverVersion=8.0" > .env.test.local
 
       - name: Installation des dependances
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
